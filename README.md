@@ -14,6 +14,41 @@ There are 4 methods, described as such:
 In order to use private channels, feel free to create unique IDs as type, or simply use a `Symbol`, whenever available.
 
 
+#### Example
+```js
+// assuming "data" event hasn't happened yet
+notify.when("data", function (data) {
+  console.log(data);
+});
+
+// whenever it will happen
+notify.about("data", {any:'value'});
+// all listeners waiting for it, will be triggered
+
+
+// what if you add a listener after the `.about` call?
+notify.when("data", function (data) {
+  console.log('yep, instantly called!', data);
+});
+
+
+// what if we redefine data ?
+notify.about("data", {another:'value'});
+// from now on, whoever will ask `.when` data
+// the value will be the updated one
+// but every listener already fired and satisfied
+// will be simply ignored
+
+
+// what if I want to be sure the channel is private?
+// feel free to use a Symbol as channel
+var myPrivateSymbol = Symbol();
+notify.when(myPrivateSymbol, ...);
+
+// otherwise create a new notify like variable
+var privateNotify = notify.new();
+```
+
 ### Compatibility
 Notify has been created in a full cross platform, browser, engine way, and it's compatible down to IE6 on Desktop, and every mobile browser I could test.
 
