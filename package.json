@@ -20,7 +20,7 @@
   },
   "main": "./build/notify-js.node.js",
   "scripts": {
-    "test": "node test/.test.js||phantomjs testrunner.js",
+    "test": "node test/.test.js",
     "web": "IP=0.0.0.0 polpetta",
     "install-global-dev": "node -e '(function(o){for(var k in o)require(\"child_process\").spawn(\"npm\",[\"install\",\"-g\",k+\"@\"+o[k]]).on(\"exit\",console.log.bind(console,k+\"@\"+o[k]));}(require(\"package.json\").globalDevDependencies))'"
   },
