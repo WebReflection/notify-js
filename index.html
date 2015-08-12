@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Notify-js by WebReflection</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Notify-js</h1>
+        <p>A simple notification message bus for things that will happen or already did</p>
+
+        <p class="view"><a href="https://github.com/WebReflection/notify-js">View the Project on GitHub <small>WebReflection/notify-js</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/WebReflection/notify-js/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/WebReflection/notify-js/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/WebReflection/notify-js">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="notify-js-" class="anchor" href="#notify-js-" aria-hidden="true"><span class="octicon octicon-link"></span></a>notify-js <a href="http://travis-ci.org/WebReflection/notify-js"><img src="https://secure.travis-ci.org/WebReflection/notify-js.svg" alt="build status"></a>
+</h1>
+
+<p>A simplified notification channel for global, or local, interaction.</p>
+
+<h3>
+<a id="api" class="anchor" href="#api" aria-hidden="true"><span class="octicon octicon-link"></span></a>API</h3>
+
+<p>There are 4 methods, described as such:</p>
+
+<ul>
+<li>
+<code>notify.when(type, callback)</code> to add a listener associated to a specific type/event. If such type was already resolved, it will synchronously invoke the callback.</li>
+<li>
+<code>notify.about(type, value)</code> to resolve a type/event with a value. Whatever listener was waiting for it, it will be invoked with such value passed as argument. Whatever listener will be added in the future through <code>when</code> it'll be instantly resolved with such value.</li>
+<li>
+<code>notify.drop(type, callback)</code> in case something hasn't happened yet and we changed our mind about waiting for the event, we can still remove it!</li>
+<li>
+<code>notify.new()</code> create a new <code>notify</code>-like object. By default, <code>notify</code> is a global communication channel, but it brings this simple method that will create a new object for private communication purpose, if needed.</li>
+</ul>
+
+<p>In order to use private channels, feel free to create unique IDs as type, or simply use a <code>Symbol</code>, whenever available.</p>
+
+<h4>
+<a id="example" class="anchor" href="#example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example</h4>
+
+<div class="highlight highlight-js"><pre><span class="pl-c">// assuming "data" event hasn't happened yet</span>
+notify.<span class="pl-c1">when</span>(<span class="pl-s"><span class="pl-pds">"</span>data<span class="pl-pds">"</span></span>, <span class="pl-k">function</span> (<span class="pl-smi">data</span>) {
+  <span class="pl-en">console</span><span class="pl-c1">.log</span>(data);
+});
+
+<span class="pl-c">// whenever it will happen</span>
+notify.<span class="pl-c1">about</span>(<span class="pl-s"><span class="pl-pds">"</span>data<span class="pl-pds">"</span></span>, {any<span class="pl-k">:</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>});
+<span class="pl-c">// all listeners waiting for it, will be triggered</span>
+
+
+<span class="pl-c">// what if you add a listener after the `.about` call?</span>
+notify.<span class="pl-c1">when</span>(<span class="pl-s"><span class="pl-pds">"</span>data<span class="pl-pds">"</span></span>, <span class="pl-k">function</span> (<span class="pl-smi">data</span>) {
+  <span class="pl-en">console</span><span class="pl-c1">.log</span>(<span class="pl-s"><span class="pl-pds">'</span>yep, instantly called!<span class="pl-pds">'</span></span>, data);
+});
+
+
+<span class="pl-c">// what if we redefine data ?</span>
+notify.<span class="pl-c1">about</span>(<span class="pl-s"><span class="pl-pds">"</span>data<span class="pl-pds">"</span></span>, {another<span class="pl-k">:</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>});
+<span class="pl-c">// from now on, whoever will ask `.when` data</span>
+<span class="pl-c">// the value will be the updated one</span>
+<span class="pl-c">// but every listener already fired and satisfied</span>
+<span class="pl-c">// will be simply ignored</span>
+
+
+<span class="pl-c">// what if I want to be sure the channel is private?</span>
+<span class="pl-c">// feel free to use a Symbol as channel</span>
+<span class="pl-k">var</span> myPrivateSymbol <span class="pl-k">=</span> <span class="pl-c1">Symbol</span>();
+notify.<span class="pl-c1">when</span>(myPrivateSymbol, ...);
+
+<span class="pl-c">// otherwise create a new notify like variable</span>
+<span class="pl-k">var</span> privateNotify <span class="pl-k">=</span> notify.<span class="pl-c1">new</span>();</pre></div>
+
+<h3>
+<a id="compatibility" class="anchor" href="#compatibility" aria-hidden="true"><span class="octicon octicon-link"></span></a>Compatibility</h3>
+
+<p>Notify has been created in a full cross platform, browser, engine way, and it's compatible down to IE6 on Desktop, and every mobile browser I could test.</p>
+
+<p>If it wasn't for <a href="https://github.com/espruino/Espruino/issues/561">this Espruino bug</a> it would have worked in there too.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/WebReflection">WebReflection</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
