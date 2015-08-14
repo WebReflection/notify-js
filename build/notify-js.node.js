@@ -75,8 +75,7 @@ function create(O) {'use strict';
     return hOP.call(_, type) ?
       _[type] :
       (_[type] = {
-        notified: false,
-        value: null,
+        args: null,
         cb: []
       });
   }
@@ -89,46 +88,74 @@ function create(O) {'use strict';
     // whenever such type will happen
     // or if it happened already
     // invoke the callback with the resolved value
-    when: function (type,  callback) {
+    when: function when(type,  callback) {
       var info = get(type);
-      if (info.notified) {
-        callback(info.value);
+      if (info.args) {
+        callback.apply(null, info.args);
       } else if(indexOf.call(info.cb, callback) < 0) {
         info.cb.push(callback);
       }
     },
 
-    // resolve a generic type through a value
-    // whatever listener is waiting for this
-    // type to be resolved, will be notified
-    // with the specified value as parameter
-    // if no listeners is waiting for it
-    // next time `.when` will be used
-    // the callback will be invoked with
-    // current parameter as first argument
-    about: function (type, value) {
+    // There are two ways to use this method
+    //
+    // .about(type)
+    //    will return a callback
+    //    that will try to resolve once executed
+    //    fs.readFile('setup.json', notify.about('setup.json'))
+    //
+    // overload
+    // .about(type, any1[, any2[, ...]])
+    //    resolve type passing anyValue around
+    //
+    //    // through one argument
+    //    notify.resolve('some-event', {all: 'good'});
+    //    // through more arguments
+    //    notify.resolve('some-event', null, 'OK');
+    //
+    about: function about(type) {
       var
+        len = arguments.length,
+        i = 1,
         info = get(type),
-        // 0 would be enough
-        // but IE8 wants the length too
+        cb
+      ;
+      // in case it's invoked
+      // without any error or value
+      if (i === len) {
+        // creates a callback
+        // that once  invoked will resolve
+        return function () {
+          var args = [type];
+          args.push.apply(args, arguments);
+          return about.apply(null, args);
+        };
+      }
+      // in  every other case
+      // resolve the type with any amount
+      // of arguments received
+      else {
+        info.args = [];
+        while (i < len) info.args.push(arguments[i++]);
+        i = 0;
+        len = info.cb.length;
         // be sure the list of waiting listeners
         // will be cleaned up so these won't
         // every be notified more than  once
         // ( unless these are passed again via `.when` )
-        cb = info.cb.splice(0, info.cb.length),
-        i = 0
-      ;
-      info.notified = true;
-      info.value = value;
-      // notify all of them
-      while (i < cb.length) cb[i++](value);
+        // NOTE:  .splice(0) would be enough
+        //        but IE8 wants the length too
+        cb = info.cb.splice(0, len);
+        // notify all of them
+        while (i < len) cb[i++].apply(null, info.args);
+      }
     },
 
     // if we set a listener through `.when`
     // and this hasn't been notified yet
     // but we changed our mind about such notification
     // we can still remove such listener via `.drop`
-    drop: function (type, callback) {
+    drop: function drop(type, callback) {
       var
         cb = get(type).cb,
         i = indexOf.call(cb, callback)
