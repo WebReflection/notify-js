@@ -68,5 +68,30 @@ wru.test([
       notify.about('test-new', r);
       wru.assert('it was invoked as notify', which === 'othernotify');
     }
+  },{
+    name: 'multiple arguments',
+    test: function () {
+      var args;
+      function increase() { args = arguments; }
+      notify.when('test-multiple-arguments', increase);
+      notify.about('test-multiple-arguments', 1, 2);
+      wru.assert(args[0] === 1 && args[1] === 2);
+    }
+  },{
+    name: 'create callback',
+    test: function () {
+      var args;
+      function increase() { args = arguments; }
+      notify.when('test-create-callback', increase);
+      var fn = notify.about('test-create-callback');
+      wru.assert('a function is returned', typeof fn === 'function');
+      wru.assert('nothing was resolved', !args);
+      fn('a', 'b', 'c');
+      wru.assert('listeners was invoked',
+        args[0] === 'a' &&
+        args[1] === 'b' &&
+        args[2] === 'c'
+      );
+    }
   }
 ]);
