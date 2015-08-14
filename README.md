@@ -15,7 +15,7 @@ There are 4 methods, described as such:
 In order to use private channels, feel free to create unique IDs as type, or simply use a `Symbol`, whenever available.
 
 
-#### Example
+#### Examples
 ```js
 // assuming "data" event hasn't happened yet
 notify.when("data", function (data) {
@@ -75,6 +75,11 @@ fs.readFile(
 ```
 
 Whenever the last `notify.about` will be executed, all listeners waiting for it will be triggered.
+
+
+## Which file ?
+Browsers could use [the minified version](build/notify-js.js), otherwise there is a [node module](build/notify-js.node.js)
+which is also available via npm as `npm install notify-js`.
 
 
 
