@@ -8,8 +8,8 @@ In case of doubts, please read the [related blog entry](https://www.webreflectio
 ### API
 There are 4 methods, described as such:
 
-  * `notify.when(type, callback)` to add a listener associated to a specific type/event. If such type was already resolved, it will synchronously invoke the callback.
-  * `notify.that(type, any1[, any2[, ...]])` aliased as `notify.about(type, any1[, any2[, ...]])` resolves a type or returns a callback used to resolve the `type` with received arguments, once executed ( see examples )
+  * `notify.when(type[, callback])` to add a callback listener associated to a specific type/event or return a promise that will be resolved once the event is executed. If such type was already resolved, it will synchronously invoke the callback.
+  * `notify.that(type[, any1[, any2[, ...]]])` aliased as `.about` resolves a type or returns a callback used to resolve the `type` with received arguments, once executed ( see examples )
   * `notify.drop(type, callback)` in case something hasn't happened yet and we changed our mind about waiting for the event, we can still remove it!
   * `notify.new()` create a new `notify`-like object. By default, `notify` is a global communication channel, but it brings this simple method that will create a new object for private communication purpose, if needed.
 
@@ -76,6 +76,17 @@ fs.readFile(
 ```
 
 Whenever the last `notify.that` will be executed, all listeners waiting for it will be triggered.
+
+
+
+#### New in 1.2.0
+
+If the `.when` method is invoked without passing a callback, it will return a `Promise` that will be resolved once the event will be called.
+
+```js
+// an ES7 future coming next  to you soon
+var coords = await notify.when('geoposition:available');
+```
 
 
 ## Which file ?

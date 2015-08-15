@@ -123,17 +123,33 @@ function create(O) {'use strict';
   // to be sure no other scripts can change its methods
   return (O.freeze || O)({
 
-    // add a listener to a generic type
-    // whenever such type will happen
-    // or if it happened already
-    // invoke the callback with the resolved value
-    when: function when(type,  callback) {
-      var info = get(type);
+    // There are two ways to use this method
+    //
+    // .when(type, callback)
+    //    add a listener to a generic type
+    //    whenever such type will happen
+    //    or if it happened already
+    //    invoke the callback with the resolved value
+    //
+    // .when(type)
+    //    return a new Promise that will be resolved
+    //    once the notification will happen
+    //
+    //    notify.when('event').then(function (data) { ... });
+    //
+    when: function when(type, callback) {
+      var info = get(type), out;
+      if (arguments.length === 1) {
+        out = new Promise(function (resolve) {
+          callback = resolve;
+        });
+      }
       if (info.args) {
         callback.apply(null, info.args);
       } else if(indexOf.call(info.cb, callback) < 0) {
         info.cb.push(callback);
       }
+      return out;
     },
 
     // .about is an alias for .that
