@@ -2,13 +2,14 @@ notify-js [![build status](https://secure.travis-ci.org/WebReflection/notify-js.
 =========
 A simplified notification channel for global, or local, interaction.
 
+In case of doubts, please read the [related blog entry](https://www.webreflection.co.uk/blog/2015/08/14/the-line-between-events-and-promises).
+
 
 ### API
 There are 4 methods, described as such:
 
   * `notify.when(type, callback)` to add a listener associated to a specific type/event. If such type was already resolved, it will synchronously invoke the callback.
-  * `notify.about(type, any1[, any2[, ...]])` returns a callback used to resolve the `type` with received arguments, once executed,
-    or resolve directly type passing one or more arguments. Whatever listener was waiting for it, it will be invoked with those parameters. Whatever listener will be added in the future through `when` it'll be instantly resolved with those values.
+  * `notify.about(type, any1[, any2[, ...]])` resolves a type or returns a callback used to resolve the `type` with received arguments, once executed ( see examples )
   * `notify.drop(type, callback)` in case something hasn't happened yet and we changed our mind about waiting for the event, we can still remove it!
   * `notify.new()` create a new `notify`-like object. By default, `notify` is a global communication channel, but it brings this simple method that will create a new object for private communication purpose, if needed.
 
@@ -78,7 +79,7 @@ Whenever the last `notify.about` will be executed, all listeners waiting for it 
 
 
 ## Which file ?
-Browsers could use [the minified version](build/notify-js.js), otherwise there is a [node module](build/notify-js.node.js)
+Browsers could use [the minified version](https://github.com/WebReflection/notify-js/blob/master/build/notify-js.js), otherwise there is a [node module](https://github.com/WebReflection/notify-js/blob/master/build/notify-js.node.js)
 which is also available via npm as `npm install notify-js`.
 
 
@@ -87,3 +88,5 @@ which is also available via npm as `npm install notify-js`.
 Notify has been created in a full cross platform, browser, engine way, and it's compatible down to IE6 on Desktop, and every mobile browser I could test.
 
 If it wasn't for [this Espruino bug](https://github.com/espruino/Espruino/issues/561) it would have worked in there too.
+
+There is a [live test page](http://webreflection.github.io/notify-js/test/) which, if green, would indicate everything is fine.
