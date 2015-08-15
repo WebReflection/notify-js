@@ -34,6 +34,8 @@
 
 <p>A simplified notification channel for global, or local, interaction.</p>
 
+<p>In case of doubts, please read the <a href="https://www.webreflection.co.uk/blog/2015/08/14/the-line-between-events-and-promises">related blog entry</a>.</p>
+
 <h3>
 <a id="api" class="anchor" href="#api" aria-hidden="true"><span class="octicon octicon-link"></span></a>API</h3>
 
@@ -43,7 +45,7 @@
 <li>
 <code>notify.when(type, callback)</code> to add a listener associated to a specific type/event. If such type was already resolved, it will synchronously invoke the callback.</li>
 <li>
-<code>notify.about(type, value)</code> to resolve a type/event with a value. Whatever listener was waiting for it, it will be invoked with such value passed as argument. Whatever listener will be added in the future through <code>when</code> it'll be instantly resolved with such value.</li>
+<code>notify.about(type, any1[, any2[, ...]])</code> resolves a type or returns a callback used to resolve the <code>type</code> with received arguments, once executed ( see examples )</li>
 <li>
 <code>notify.drop(type, callback)</code> in case something hasn't happened yet and we changed our mind about waiting for the event, we can still remove it!</li>
 <li>
@@ -53,14 +55,14 @@
 <p>In order to use private channels, feel free to create unique IDs as type, or simply use a <code>Symbol</code>, whenever available.</p>
 
 <h4>
-<a id="example" class="anchor" href="#example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example</h4>
+<a id="examples" class="anchor" href="#examples" aria-hidden="true"><span class="octicon octicon-link"></span></a>Examples</h4>
 
 <div class="highlight highlight-js"><pre><span class="pl-c">// assuming "data" event hasn't happened yet</span>
 notify.<span class="pl-c1">when</span>(<span class="pl-s"><span class="pl-pds">"</span>data<span class="pl-pds">"</span></span>, <span class="pl-k">function</span> (<span class="pl-smi">data</span>) {
   <span class="pl-en">console</span><span class="pl-c1">.log</span>(data);
 });
 
-<span class="pl-c">// whenever it will happen</span>
+<span class="pl-c">// whenever it will happen, resolve via {any:'value'}</span>
 notify.<span class="pl-c1">about</span>(<span class="pl-s"><span class="pl-pds">"</span>data<span class="pl-pds">"</span></span>, {any<span class="pl-k">:</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>});
 <span class="pl-c">// all listeners waiting for it, will be triggered</span>
 
@@ -68,6 +70,7 @@ notify.<span class="pl-c1">about</span>(<span class="pl-s"><span class="pl-pds">
 <span class="pl-c">// what if you add a listener after the `.about` call?</span>
 notify.<span class="pl-c1">when</span>(<span class="pl-s"><span class="pl-pds">"</span>data<span class="pl-pds">"</span></span>, <span class="pl-k">function</span> (<span class="pl-smi">data</span>) {
   <span class="pl-en">console</span><span class="pl-c1">.log</span>(<span class="pl-s"><span class="pl-pds">'</span>yep, instantly called!<span class="pl-pds">'</span></span>, data);
+  <span class="pl-c">// data will be exactly {any:'value'}</span>
 });
 
 
@@ -87,12 +90,44 @@ notify.<span class="pl-c1">when</span>(myPrivateSymbol, ...);
 <span class="pl-c">// otherwise create a new notify like variable</span>
 <span class="pl-k">var</span> privateNotify <span class="pl-k">=</span> notify.<span class="pl-c1">new</span>();</pre></div>
 
+<p>It is also possible to use <code>.about(type)</code> in order to generate a callback
+that once invoked will resolve the type.</p>
+
+<p>Example</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> fs <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>fs<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> notify <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>notify-js<span class="pl-pds">'</span></span>);
+
+
+<span class="pl-c">// before or after, it doesn't matter</span>
+notify.<span class="pl-c1">when</span>(<span class="pl-s"><span class="pl-pds">'</span>config-available<span class="pl-pds">'</span></span>, <span class="pl-k">function</span> (<span class="pl-smi">err</span>, <span class="pl-smi">content</span>) {
+  <span class="pl-k">if</span> (err) <span class="pl-en">console</span><span class="pl-c1">.warn</span>(<span class="pl-s"><span class="pl-pds">'</span>damn it<span class="pl-pds">'</span></span>);
+  <span class="pl-k">else</span> <span class="pl-en">console</span><span class="pl-c1">.log</span>(content);
+});
+
+
+<span class="pl-c">// at any time in the past, present, or future</span>
+fs.<span class="pl-c1">readFile</span>(
+  <span class="pl-s"><span class="pl-pds">'</span>config.json<span class="pl-pds">'</span></span>,
+  notify.<span class="pl-c1">about</span>(<span class="pl-s"><span class="pl-pds">'</span>config-available<span class="pl-pds">'</span></span>)
+);</pre></div>
+
+<p>Whenever the last <code>notify.about</code> will be executed, all listeners waiting for it will be triggered.</p>
+
+<h2>
+<a id="which-file-" class="anchor" href="#which-file-" aria-hidden="true"><span class="octicon octicon-link"></span></a>Which file ?</h2>
+
+<p>Browsers could use <a href="https://github.com/WebReflection/notify-js/blob/master/build/notify-js.js">the minified version</a>, otherwise there is a <a href="https://github.com/WebReflection/notify-js/blob/master/build/notify-js.node.js">node module</a>
+which is also available via npm as <code>npm install notify-js</code>.</p>
+
 <h3>
 <a id="compatibility" class="anchor" href="#compatibility" aria-hidden="true"><span class="octicon octicon-link"></span></a>Compatibility</h3>
 
 <p>Notify has been created in a full cross platform, browser, engine way, and it's compatible down to IE6 on Desktop, and every mobile browser I could test.</p>
 
 <p>If it wasn't for <a href="https://github.com/espruino/Espruino/issues/561">this Espruino bug</a> it would have worked in there too.</p>
+
+<p>There is a <a href="http://webreflection.github.io/notify-js/test/">live test page</a> which, if green, would indicate everything is fine.</p>
       </section>
       <footer>
         <p>This project is maintained by <a href="https://github.com/WebReflection">WebReflection</a></p>
