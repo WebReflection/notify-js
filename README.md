@@ -88,6 +88,8 @@ If the `.when` method is invoked without passing a callback, it will return a `P
 var coords = await notify.when('geoposition:available');
 ```
 
+Please note this library is not in charge of providing any polyfill, so if a `Promise` is needed, please be sure your target engines support it.
+
 
 ## Which file ?
 Browsers could use [the minified version](https://github.com/WebReflection/notify-js/blob/master/build/notify-js.js), otherwise there is a [node module](https://github.com/WebReflection/notify-js/blob/master/build/notify-js.node.js)
