@@ -106,11 +106,22 @@ function create(O) {'use strict';
     // invoke the callback with the resolved value
     when: function when(type,  callback) {
       var info = get(type);
-      if (info.args) {
+
+      // if no callback is supplied
+      // return an actual promise
+      if (Promise && !callback) {
+        var output = new Promise(function(resolve) {
+          callback = resolve;
+        });
+      }
+
+      else if (info.args) {
         callback.apply(null, info.args);
       } else if(indexOf.call(info.cb, callback) < 0) {
         info.cb.push(callback);
       }
+
+      return output;
     },
 
     // .about is an alias for .that
