@@ -28,7 +28,7 @@ var notify = (function () {
  * });
  *
  * // whenever it will happen
- * notify.about("data", {any:'value'});
+ * notify.that("data", {any:'value'});
  * // all listeners waiting for it, will be triggered
  *
  *
@@ -81,6 +81,44 @@ function create(O) {'use strict';
       });
   }
 
+  function that(type) {
+    var
+      len = arguments.length,
+      i = 1,
+      info = get(type),
+      cb
+    ;
+    // in case it's invoked
+    // without any error or value
+    if (i === len) {
+      // creates a callback
+      // that once  invoked will resolve
+      return function () {
+        var args = [type];
+        args.push.apply(args, arguments);
+        return that.apply(null, args);
+      };
+    }
+    // in  every other case
+    // resolve the type with any amount
+    // of arguments received
+    else {
+      info.args = [];
+      while (i < len) info.args.push(arguments[i++]);
+      i = 0;
+      len = info.cb.length;
+      // be sure the list of waiting listeners
+      // will be cleaned up so these won't
+      // every be notified more than  once
+      // ( unless these are passed again via `.when` )
+      // NOTE:  .splice(0) would be enough
+      //        but IE8 wants the length too
+      cb = info.cb.splice(0, len);
+      // notify all of them
+      while (i < len) cb[i++].apply(null, info.args);
+    }
+  }
+
   // freeze, if possible, the notify object
   // to be sure no other scripts can change its methods
   return (O.freeze || O)({
@@ -98,6 +136,7 @@ function create(O) {'use strict';
       }
     },
 
+    // .about is an alias for .that
     // There are two ways to use this method
     //
     // .about(type)
@@ -106,51 +145,16 @@ function create(O) {'use strict';
     //    fs.readFile('setup.json', notify.about('setup.json'))
     //
     // overload
-    // .about(type, any1[, any2[, ...]])
+    // .that(type, any1[, any2[, ...]])
     //    resolve type passing anyValue around
     //
     //    // through one argument
-    //    notify.resolve('some-event', {all: 'good'});
+    //    notify.that('some-event', {all: 'good'});
     //    // through more arguments
-    //    notify.resolve('some-event', null, 'OK');
+    //    notify.that('some-event', null, 'OK');
     //
-    about: function about(type) {
-      var
-        len = arguments.length,
-        i = 1,
-        info = get(type),
-        cb
-      ;
-      // in case it's invoked
-      // without any error or value
-      if (i === len) {
-        // creates a callback
-        // that once  invoked will resolve
-        return function () {
-          var args = [type];
-          args.push.apply(args, arguments);
-          return about.apply(null, args);
-        };
-      }
-      // in  every other case
-      // resolve the type with any amount
-      // of arguments received
-      else {
-        info.args = [];
-        while (i < len) info.args.push(arguments[i++]);
-        i = 0;
-        len = info.cb.length;
-        // be sure the list of waiting listeners
-        // will be cleaned up so these won't
-        // every be notified more than  once
-        // ( unless these are passed again via `.when` )
-        // NOTE:  .splice(0) would be enough
-        //        but IE8 wants the length too
-        cb = info.cb.splice(0, len);
-        // notify all of them
-        while (i < len) cb[i++].apply(null, info.args);
-      }
-    },
+    about: that,
+    that: that,
 
     // if we set a listener through `.when`
     // and this hasn't been notified yet

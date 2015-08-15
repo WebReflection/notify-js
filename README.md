@@ -9,7 +9,7 @@ In case of doubts, please read the [related blog entry](https://www.webreflectio
 There are 4 methods, described as such:
 
   * `notify.when(type, callback)` to add a listener associated to a specific type/event. If such type was already resolved, it will synchronously invoke the callback.
-  * `notify.about(type, any1[, any2[, ...]])` resolves a type or returns a callback used to resolve the `type` with received arguments, once executed ( see examples )
+  * `notify.that(type, any1[, any2[, ...]])` aliased as `notify.about(type, any1[, any2[, ...]])` resolves a type or returns a callback used to resolve the `type` with received arguments, once executed ( see examples )
   * `notify.drop(type, callback)` in case something hasn't happened yet and we changed our mind about waiting for the event, we can still remove it!
   * `notify.new()` create a new `notify`-like object. By default, `notify` is a global communication channel, but it brings this simple method that will create a new object for private communication purpose, if needed.
 
@@ -24,11 +24,11 @@ notify.when("data", function (data) {
 });
 
 // whenever it will happen, resolve via {any:'value'}
-notify.about("data", {any:'value'});
+notify.that("data", {any:'value'});
 // all listeners waiting for it, will be triggered
 
 
-// what if you add a listener after the `.about` call?
+// what if you add a listener after the `.that` call?
 notify.when("data", function (data) {
   console.log('yep, instantly called!', data);
   // data will be exactly {any:'value'}
@@ -36,7 +36,7 @@ notify.when("data", function (data) {
 
 
 // what if we redefine data ?
-notify.about("data", {another:'value'});
+notify.that("data", {another:'value'});
 // from now on, whoever will ask `.when` data
 // the value will be the updated one
 // but every listener already fired and satisfied
@@ -52,7 +52,7 @@ notify.when(myPrivateSymbol, ...);
 var privateNotify = notify.new();
 ```
 
-It is also possible to use `.about(type)` in order to generate a callback
+It is also possible to use `.that(type)` in order to generate a callback
 that once invoked will resolve the type.
 
 Example
@@ -71,11 +71,11 @@ notify.when('config-available', function (err, content) {
 // at any time in the past, present, or future
 fs.readFile(
   'config.json',
-  notify.about('config-available')
+  notify.that('config-available')
 );
 ```
 
-Whenever the last `notify.about` will be executed, all listeners waiting for it will be triggered.
+Whenever the last `notify.that` will be executed, all listeners waiting for it will be triggered.
 
 
 ## Which file ?

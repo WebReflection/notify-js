@@ -16,15 +16,15 @@ wru.test([
       function increase() { i++; }
       notify.when('test-when', increase);
       wru.assert('did not happen', i === 0);
-      notify.about('test-when', r);
+      notify.that('test-when', r);
       wru.assert('it was invoked', i === 1);
-      notify.about('test-when', r);
+      notify.that('test-when', r);
       wru.assert('it was NOT invoked', i === 1);
       notify.when('test-when', increase);
       wru.assert('it was invoked again', i === 2);
     }
   },{
-    name: 'about',
+    name: 'that',
     test: function () {
       var
         r1 = Math.random(),
@@ -34,11 +34,11 @@ wru.test([
       function about(value) { v = value; }
       notify.when('test-about', about);
       wru.assert(v === undefined);
-      notify.about('test-about', r1);
+      notify.that('test-about', r1);
       wru.assert(v === r1);
       v = null;
       notify.when('test-about', about);
-      notify.about('test-about', r2);
+      notify.that('test-about', r2);
       notify.when('test-about', about);
       wru.assert(v === r2);
     }
@@ -49,7 +49,7 @@ wru.test([
       function increase() { i++; }
       notify.when('test-drop', increase);
       notify.drop('test-drop', increase);
-      notify.about('test-drop', r);
+      notify.that('test-drop', r);
       wru.assert('it was NOT invoked', i === 0);
     }
   },{
@@ -63,9 +63,9 @@ wru.test([
       notify.when('test-new', function () {
         which += 'notify';
       });
-      other.about('test-new', r);
+      other.that('test-new', r);
       wru.assert('it was invoked as other', which === 'other');
-      notify.about('test-new', r);
+      notify.that('test-new', r);
       wru.assert('it was invoked as notify', which === 'othernotify');
     }
   },{
@@ -74,7 +74,7 @@ wru.test([
       var args;
       function increase() { args = arguments; }
       notify.when('test-multiple-arguments', increase);
-      notify.about('test-multiple-arguments', 1, 2);
+      notify.that('test-multiple-arguments', 1, 2);
       wru.assert(args[0] === 1 && args[1] === 2);
     }
   },{
@@ -83,7 +83,7 @@ wru.test([
       var args;
       function increase() { args = arguments; }
       notify.when('test-create-callback', increase);
-      var fn = notify.about('test-create-callback');
+      var fn = notify.that('test-create-callback');
       wru.assert('a function is returned', typeof fn === 'function');
       wru.assert('nothing was resolved', !args);
       fn('a', 'b', 'c');
