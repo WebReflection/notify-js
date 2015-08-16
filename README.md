@@ -79,16 +79,34 @@ Whenever the last `notify.that` will be executed, all listeners waiting for it w
 
 
 
-#### New in 1.2.0
+#### New in 1.2.0 - optional Promise behavior
 
-If the `.when` method is invoked without passing a callback, it will return a `Promise` that will be resolved once the event will be called.
+If the `.when` method is **invoked without passing a callback**, it will return a `Promise` that will be resolved once the event will be called.
 
 ```js
 // an ES7 future coming next  to you soon
 var coords = await notify.when('geoposition:available');
-```
 
-Please note this library is not in charge of providing any polyfill, so if a `Promise` is needed, please be sure your target engines support it.
+
+// keep a promise for future .then(cb) usage
+var getCoords = notify.when('geoposition:available');
+
+// don't keep a promise, but use it as such
+notify.when('geoposition:available').then(function (coords) {
+  // use coords
+});
+
+
+// equivalent, NON Promise based result
+notify.when('geoposition:available', function (coords) {
+  // use coords
+});
+// if the callback is specified, no Promise will ever be
+// created or returned to avoid resolution race and
+// conflicts between these two different patterns
+```
+Please note this library is *not in charge of providing any polyfill*, so if a `Promise` is needed, please be sure your target engines support it. Alternatively, if there is no `Promise` constructor available, this library will throw a `ReferenceError`.
+
 
 
 ## Which file ?
