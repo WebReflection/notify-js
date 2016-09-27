@@ -9,6 +9,7 @@ In case of doubts, please read the [related blog entry](https://www.webreflectio
 There are 4 methods, described as such:
 
   * `notify.when(type[, callback])` to add a callback listener associated to a specific type/event or return a promise that will be resolved once the event is executed. If such type was already resolved, it will synchronously invoke the callback.
+  * `notify.all(type, callback)` same as `when` but invoked every time the event occurs. The callback is mandatory and it's revokable via `drop`.
   * `notify.that(type[, any1[, any2[, ...]]])` aliased as `.about` resolves a type or returns a callback used to resolve the `type` with received arguments, once executed ( see examples )
   * `notify.drop(type, callback)` in case something hasn't happened yet and we changed our mind about waiting for the event, we can still remove it!
   * `notify.new()` create a new `notify`-like object. By default, `notify` is a global communication channel, but it brings this simple method that will create a new object for private communication purpose, if needed.
