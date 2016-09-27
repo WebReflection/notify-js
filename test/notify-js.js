@@ -93,6 +93,21 @@ wru.test([
         args[2] === 'c'
       );
     }
+  }, {
+    name: 'all',
+    test: function () {
+      var i = 0, r = Math.random();
+      function increase() { i++; }
+      notify.all('test-all', increase);
+      wru.assert('did not happen', i === 0);
+      notify.that('test-all', r);
+      wru.assert('it was invoked', i === 1);
+      notify.that('test-all', r);
+      wru.assert('it was invoked', i === 2);
+      notify.drop('test-all', increase);
+      notify.that('test-all', r);
+      wru.assert('it was NOT invoked again', i === 2);
+    }
   }
 ].concat(typeof Promise !== 'undefined' ? [
   {

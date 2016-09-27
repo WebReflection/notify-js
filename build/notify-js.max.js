@@ -59,14 +59,36 @@ function create(O) {'use strict';
   var
     // create a dictionary, fallback as regular object
     _ = (O.create || O)(null),
-    // dictionaries don't have this method, botrrow it
+    // dictionaries don't have this method, borrow it
     hOP = O.prototype.hasOwnProperty,
     // IE < 9 doesn't have this method, shim it
     indexOf = Array.prototype.indexOf || function indexOf(v) {
       var i = this.length;
       while (i-- && this[i] !== v) {}
       return i;
-    }
+    },
+    invoke = true,
+    wm = typeof WeakMap == 'undefined' ?
+      (function (k, v, i) {
+        return {
+          // delete used to be a reserved property name
+          'delete': function (x) {
+            i = indexOf.call(k, x);
+            if (~i) {
+              k.splice(i, 1);
+              v.splice(i, 1);
+            }
+          },
+          get: function (x) {
+            return v[indexOf.call(k, x)];
+          },
+          set: function (x, y) {
+            i = indexOf.call(k, x);
+            v[i < 0 ? (k.push(x) - 1) : i] = y;
+          }
+        };
+      }([], [], 0)) :
+      new WeakMap()
   ;
 
   // check if a private _[type] is known
@@ -84,8 +106,8 @@ function create(O) {'use strict';
   function that(type) {
     var
       len = arguments.length,
-      i = 1,
       info = get(type),
+      i = 1,
       cb
     ;
     // in case it's invoked
@@ -119,6 +141,21 @@ function create(O) {'use strict';
     }
   }
 
+  function when(type, callback) {
+    var info = get(type), out;
+    if (arguments.length === 1) {
+      out = new Promise(function (resolve) {
+        callback = resolve;
+      });
+    }
+    if (invoke && info.args) {
+      callback.apply(null, info.args);
+    } else if(indexOf.call(info.cb, callback) < 0) {
+      info.cb.push(callback);
+    }
+    return out;
+  }
+
   // freeze, if possible, the notify object
   // to be sure no other scripts can change its methods
   return (O.freeze || O)({
@@ -137,20 +174,7 @@ function create(O) {'use strict';
     //
     //    notify.when('event').then(function (data) { ... });
     //
-    when: function when(type, callback) {
-      var info = get(type), out;
-      if (arguments.length === 1) {
-        out = new Promise(function (resolve) {
-          callback = resolve;
-        });
-      }
-      if (info.args) {
-        callback.apply(null, info.args);
-      } else if(indexOf.call(info.cb, callback) < 0) {
-        info.cb.push(callback);
-      }
-      return out;
-    },
+    when: when,
 
     // .about is an alias for .that
     // There are two ways to use this method
@@ -177,16 +201,36 @@ function create(O) {'use strict';
     // but we changed our mind about such notification
     // we can still remove such listener via `.drop`
     drop: function drop(type, callback) {
-      var
-        cb = get(type).cb,
-        i = indexOf.call(cb, callback)
-      ;
-      if (-1 < i) cb.splice(i, 1);
+      var fn = wm.get(callback), cb, i;
+      if (fn) {
+        wm['delete'](callback);
+        drop(type, fn);
+      } else {
+        cb = get(type).cb;
+        i = indexOf.call(cb, callback);
+        if (~i) cb.splice(i, 1);
+      }
     },
 
     // create a new notify-like object
     'new': function () {
       return create(O);
+    },
+
+    // in case we'd like to react each time
+    // to a specific event.
+    // In this case a callback is mandatory,
+    // and it's also needed to eventually drop.
+    all: function all(type, callback) {
+      if (!wm.get(callback)) {
+        wm.set(callback, function fn() {
+          invoke = false;
+          when(type, fn);
+          invoke = true;
+          callback.apply(null, arguments);
+        });
+        when(type, wm.get(callback));
+      }
     }
   });
 }
