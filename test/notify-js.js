@@ -114,10 +114,8 @@ wru.test([
     name: '.when(type):Promise',
     test:  function () {
       var v = Math.random(), args;
-      function increase() { args = arguments; }
       var p = notify.when('test-promise');
       wru.assert('an object has been returned', typeof p === 'object');
-      wru.assert('nothing was resolved', !args);
       notify.that('test-promise', v);
       p.then(wru.async(function (value) {
         wru.assert('the value is the right one', value === v);
