@@ -41,16 +41,17 @@ test.async(function (done) {
   notify.when('test-when', increase);
   setTimeout(function () {
     test.log('## when');
-    test.assert(i === 0, 'did not happen');
+    test(i === 0, 'did not happen');
     notify.that('test-when', r);
+    test(i === 0, 'happens asynchronously');
     setTimeout(function () {
-      test.assert(i === 1, 'it was invoked');
+      test(i === 1, 'it was invoked');
       notify.that('test-when', r);
       setTimeout(function () {
-        test.assert(i === 1, 'it was NOT invoked');
+        test(i === 1, 'it was NOT invoked');
         notify.when('test-when', increase);
         setTimeout(function () {
-          test.assert(i === 2, 'it was invoked again');
+          test(i === 2, 'it was invoked again');
           done();
         }, delay);
       }, delay);
@@ -175,9 +176,11 @@ test.async(function (done) {
     test.log('## all');
     test(i === 0, 'did not happen');
     notify.that('test-all', r);
+    test(i === 0, 'happens asynchronously');
     setTimeout(function () {
       test(i === 1, 'it was invoked');
       notify.that('test-all', r);
+      test(i === 1, 're-happens asynchronously');
       setTimeout(function () {
         test(i === 2, 'it was invoked');
         notify.drop('test-all', increase);
