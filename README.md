@@ -1,5 +1,6 @@
-notify-js [![build status](https://secure.travis-ci.org/WebReflection/notify-js.svg)](http://travis-ci.org/WebReflection/notify-js)
+notify-js [![build status](https://secure.travis-ci.org/WebReflection/notify-js.svg)](http://travis-ci.org/WebReflection/notify-js) [![Coverage Status](https://coveralls.io/repos/github/WebReflection/notify-js/badge.svg?branch=master)](https://coveralls.io/github/WebReflection/notify-js?branch=master)
 =========
+
 A simplified notification channel for global, or local, interaction.
 
 In case of doubts, please read the [related blog entry](https://www.webreflection.co.uk/blog/2015/08/14/the-line-between-events-and-promises).
@@ -8,7 +9,7 @@ In case of doubts, please read the [related blog entry](https://www.webreflectio
 ### API
 There are 4 methods, described as such:
 
-  * `notify.when(type[, callback])` to add a callback listener associated to a specific type/event or return a promise that will be resolved once the event is executed. If such type was already resolved, it will synchronously invoke the callback.
+  * `notify.when(type[, callback])` to add a callback listener associated to a specific type/event or return a `Promise` that will be resolved once the event is executed. If such type was already resolved, it will synchronously invoke the callback.
   * `notify.all(type, callback)` same as `when` but invoked every time the event occurs. The callback is mandatory and it's revokable via `drop`.
   * `notify.that(type[, any1[, any2[, ...]]])` aliased as `.about` resolves a type or returns a callback used to resolve the `type` with received arguments, once executed ( see examples )
   * `notify.drop(type, callback)` in case something hasn't happened yet and we changed our mind about waiting for the event, we can still remove it!
@@ -106,7 +107,8 @@ notify.when('geoposition:available', function (coords) {
 // created or returned to avoid resolution race and
 // conflicts between these two different patterns
 ```
-Please note this library is *not in charge of providing any polyfill*, so if a `Promise` is needed, please be sure your target engines support it. Alternatively, if there is no `Promise` constructor available, this library will throw a `ReferenceError`.
+Please note this library is *not in charge of providing any polyfill*, so if a `Promise` is needed, please be sure your target engines support it.
+Alternatively, if there is no `Promise` constructor available, this library will throw a `ReferenceError`.
 
 
 
@@ -117,8 +119,6 @@ which is also available via npm as `npm install notify-js`.
 
 
 ### Compatibility
-Notify has been created in a full cross platform, browser, engine way, and it's compatible down to IE6 on Desktop, and every mobile browser I could test.
+This library is compatible with every JS engine since ES3, both browser and server.
 
-If it wasn't for [this Espruino bug](https://github.com/espruino/Espruino/issues/561) it would have worked in there too.
-
-There is a [live test page](http://webreflection.github.io/notify-js/test/) which, if green, would indicate everything is fine.
+A `Promise` polyfill might be needed to use Promise based `notify.that('evt-name').then(...)`

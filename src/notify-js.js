@@ -34,17 +34,39 @@
 function create(O) {'use strict';
 
   var
+    // flag for internal operations (used by all)
+    invoke = true,
     // create a dictionary, fallback as regular object
     _ = (O.create || O)(null),
     // dictionaries don't have this method, borrow it
     hOP = O.prototype.hasOwnProperty,
-    // IE < 9 doesn't have this method, shim it
+    // will invoke the callback within the Promise
+    notify = function (args) {
+      this.apply(null, args);
+    },
+    // IE < 9 doesn't have this method, sham it
+    bind = O.bind || function (self) {
+      var cb = this;
+      return function () {
+        return cb.apply(self, arguments);
+      };
+    },
+    // IE < 9 doesn't have this method, sham it
     indexOf = Array.prototype.indexOf || function indexOf(v) {
       var i = this.length;
       while (i-- && this[i] !== v) {}
       return i;
     },
-    invoke = true,
+    resolve = typeof Promise == 'undefined' ?
+      function (value) {
+        return {then: function (cb) {
+          setTimeout(cb, 1, value);
+        }};
+      } :
+      function (value) {
+        return Promise.resolve(value);
+      },
+    // little WeakMap poly
     wm = typeof WeakMap == 'undefined' ?
       (function (k, v, i) {
         return {
@@ -112,9 +134,8 @@ function create(O) {'use strict';
       // ( unless these are passed again via `.when` )
       // NOTE:  .splice(0) would be enough
       //        but IE8 wants the length too
-      cb = info.cb.splice(0, len);
-      // notify all of them
-      while (i < len) cb[i++].apply(null, info.args);
+      cb = info.cb.splice(i, len);
+      while (i < len) resolve(info.args).then(bind.call(notify, cb[i++]));
     }
   }
 
@@ -126,7 +147,7 @@ function create(O) {'use strict';
       });
     }
     if (invoke && info.args) {
-      callback.apply(null, info.args);
+      resolve(info.args).then(bind.call(notify, callback));
     } else if(indexOf.call(info.cb, callback) < 0) {
       info.cb.push(callback);
     }
@@ -204,7 +225,7 @@ function create(O) {'use strict';
           invoke = false;
           when(type, fn);
           invoke = true;
-          callback.apply(null, arguments);
+          resolve(arguments).then(bind.call(notify, callback));
         });
         when(type, wm.get(callback));
       }
