@@ -29,7 +29,7 @@ build:
 var:
 	mkdir -p build
 	cat template/var.before $(VAR) template/var.after >build/no-copy.$(REPO).max.js
-	node node_modules/uglify-js/bin/uglifyjs --verbose build/no-copy.$(REPO).max.js >build/no-copy.$(REPO).js
+	npm run minify
 	cat template/license.before LICENSE.txt template/license.after build/no-copy.$(REPO).max.js >build/$(REPO).max.js
 	cat template/copyright build/no-copy.$(REPO).js >build/$(REPO).js
 	rm build/no-copy.$(REPO).max.js

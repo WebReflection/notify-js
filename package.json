@@ -22,9 +22,11 @@
   "scripts": {
     "test": "NATIVE=1 node test/test.js && sleep 2 && istanbul cover test/test.js",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
+    "minify": "babili build/no-copy.notify-js.max.js -o build/no-copy.notify-js.js",
     "web": "tiny-cdn run"
   },
   "devDependencies": {
+    "babili": "0.0.11",
     "coveralls": "^2.11.15",
     "istanbul": "^0.4.5",
     "jshint": "~2.x",

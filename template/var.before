@@ -1,1 +1,1 @@
-var notify = (function () {
+var notify = (function () {'use strict';
