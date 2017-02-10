@@ -22,7 +22,9 @@ THE SOFTWARE.
 */
 'use strict';const create = O => {
 
-  var
+  let invoke = true;
+
+  const
     _ = O.create(null),
     drop = (type, callback) => {
       const fn = wm.get(callback);
@@ -38,7 +40,6 @@ THE SOFTWARE.
       }
     },
     get = type => (_[type] || (_[type] = {args: null, cb: []})),
-    invoke = true,
     resolve = value => Promise.resolve(value),
     that = (type, ...args) => {
       let i = 0, len = args.length;
