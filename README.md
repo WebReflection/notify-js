@@ -6,12 +6,12 @@ and those that will happen in the future.
 [Related blog entry](https://www.webreflection.co.uk/blog/2015/08/14/the-line-between-events-and-promises).
 
 
-### API
+## API
 There are 2 main methods such `.that(type[, any1[, any2[, ...]]])` and `.when(type[, callback])`,
 plus 3 extra helpers such `.drop(type, callback)`, `.all(type, callback)`, and `.new()`.
 
 
-#### notify.that(type[, ...])
+### notify.that(type[, ...])
 This method is useful to notify about a generic channel.
 
 ```js
@@ -35,7 +35,7 @@ fs.readFile(
 ```
 
 
-##### notify.that(type) and Promises
+#### notify.that(type) and Promises
 This method can also be used as middleware, passing along whatever first argument it receives.
 
 ```js
@@ -47,7 +47,7 @@ connectToDb
 ```
 
 
-#### notify.when(type[, callback])
+### notify.when(type[, callback])
 Usable both through callbacks or as `Promise`, the `.when` method asks for a channel and resolves it once available.
 
 ```js
@@ -79,9 +79,9 @@ setTimeout(() => {
 ```
 
 
-##### Callback or Promise ?
+#### Callback or Promise ?
 If you are resolving older APIs like NodeJS `require('fs').readFileSync`,
-you probably want to use a callback because the resolution will pass along two arguments, not just one.
+you probably want to use a callback because the resolution will pass along two arguments instead of one.
 
 ```js
 fs.readFile(
@@ -107,7 +107,7 @@ fs.readFile(
 ```
 
 
-##### notify.drop(type, callback)
+### notify.drop(type, callback)
 Usable only for callbacks registered via `notify.when(type, callback)`,
 the `.drop` method avoid triggering the channel in the immediate present or future.
 
@@ -129,7 +129,7 @@ notify.that('happened', 'nope');
 This method is particularly handy in conjunction of the `notify.all(type, callback)` method.
 
 
-##### notify.all(type, callback)
+### notify.all(type, callback)
 In case you'd like to react every time a channel is updated,
 this method will register the `callback` and invoke it with the latest resolution each time.
 
@@ -154,18 +154,18 @@ notify.all(
 
 Registered callbacks can be dropped through the `notify.drop(type, callback)` method.
 
-##### notify.new()
+### notify.new()
 There are basically two ways to have a private notification channel:
 
   * using a private `Symbol` as channel, like in `notify.when(privateSymbol).then(log)`
   * create a local version of the notifier that will share nothing with the main one, like in `const notifyPVT = notify.new();`
 
 
-### Which file ?
+## Which file ?
 Browsers could use [the minified version](https://github.com/WebReflection/notify-js/blob/master/build/notify-js.js), otherwise there is a [node module](https://github.com/WebReflection/notify-js/blob/master/build/notify-js.node.js)
 which is also available via npm as `npm install notify-js`.
 
 
-### Compatibility
+## Compatibility
 This library is compatible with every JS engine since ES3, both browser and server,
 but a `Promise` polyfill might be needed to use Promise based patterns.
