@@ -80,7 +80,7 @@ setTimeout(() => {
 
 
 #### Callback or Promise ?
-If you are resolving older APIs like NodeJS `require('fs').readFileSync`,
+If you are resolving older APIs like NodeJS `require('fs').readFile`,
 you probably want to use a callback because the resolution will pass along two arguments instead of one.
 
 ```js
