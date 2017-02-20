@@ -1,140 +1,171 @@
 notify-js [![build status](https://secure.travis-ci.org/WebReflection/notify-js.svg)](http://travis-ci.org/WebReflection/notify-js) [![Coverage Status](https://coveralls.io/repos/github/WebReflection/notify-js/badge.svg?branch=master)](https://coveralls.io/github/WebReflection/notify-js?branch=master)
 =========
 
-A simplified notification channel for global, or local, interaction.
-
-In case of doubts, please read the [related blog entry](https://www.webreflection.co.uk/blog/2015/08/14/the-line-between-events-and-promises).
+A simplified global or private notification channel for values that happened in the past,
+and those that will happen in the future.
+[Related blog entry](https://www.webreflection.co.uk/blog/2015/08/14/the-line-between-events-and-promises).
 
 
 ### API
-There are 4 methods, described as such:
-
-  * `notify.when(type[, callback])` to add a callback listener associated to a specific type/event or return a `Promise` that will be resolved once the event is executed. If such type was already resolved, it will synchronously invoke the callback.
-  * `notify.all(type, callback)` same as `when` but invoked every time the event occurs. The callback is mandatory and it's revokable via `drop`.
-  * `notify.that(type[, any1[, any2[, ...]]])` aliased as `.about` resolves a type or returns a callback used to resolve the `type` with received arguments, once executed ( see examples )
-  * `notify.drop(type, callback)` in case something hasn't happened yet and we changed our mind about waiting for the event, we can still remove it!
-  * `notify.new()` create a new `notify`-like object. By default, `notify` is a global communication channel, but it brings this simple method that will create a new object for private communication purpose, if needed.
-  * `notify.through(type)` returns a Promise middleware-like function that will resolve the `type` and return whatever value was received.
+There are 2 main methods such `.that(type[, any1[, any2[, ...]]])` and `.when(type[, callback])`,
+plus 3 extra helpers such `.drop(type, callback)`, `.all(type, callback)`, and `.new()`.
 
 
-In order to use private channels, feel free to create unique IDs as type, or simply use a `Symbol`, whenever available.
+#### notify.that(type[, ...])
+This method is useful to notify about a generic channel.
 
-
-#### Examples
 ```js
-// assuming "data" event hasn't happened yet
-notify.when("data", function (data) {
-  console.log(data);
+// whenever it happens ...
+navigator.geolocation.getCurrentPosition(info => {
+  // ... notify anyone asking for 'geo:position'
+  notify.that('geo:position', info);
 });
 
-// whenever it will happen, resolve via {any:'value'}
-notify.that("data", {any:'value'});
-// all listeners waiting for it, will be triggered
+// equivalent shortcut, will resolve
+// with the first argument
+navigator.geolocation.getCurrentPosition(
+  notify.that('geo:position')
+);
 
-
-// what if you add a listener after the `.that` call?
-notify.when("data", function (data) {
-  console.log('yep, instantly called!', data);
-  // data will be exactly {any:'value'}
-});
-
-
-// what if we redefine data ?
-notify.that("data", {another:'value'});
-// from now on, whoever will ask `.when` data
-// the value will be the updated one
-// but every listener already fired and satisfied
-// will be simply ignored
-
-
-// what if I want to be sure the channel is private?
-// feel free to use a Symbol as channel
-var myPrivateSymbol = Symbol();
-notify.when(myPrivateSymbol, ...);
-
-// otherwise create a new notify like variable
-var privateNotify = notify.new();
-```
-
-It is also possible to use `.that(type)` in order to generate a callback
-that once invoked will resolve the type.
-
-Example
-```js
-var fs = require('fs');
-var notify = require('notify-js');
-
-
-// before or after, it doesn't matter
-notify.when('config-available', function (err, content) {
-  if (err) console.warn('damn it');
-  else console.log(content);
-});
-
-
-// at any time in the past, present, or future
+// NodeJS API compatible
 fs.readFile(
-  'config.json',
-  notify.that('config-available')
+  'package.json',
+  notify.that('fs:package.json')
 );
 ```
 
-Whenever the last `notify.that` will be executed, all listeners waiting for it will be triggered.
 
-
-#### New in 2.1.0 - notify.that(type):futureValue
-
-Handy to resolve while passing through a promise chain, the `.that(type)` method now returns whatever value has been used to resolve.
+##### notify.that(type) and Promises
+This method can also be used as middleware, passing along whatever first argument it receives.
 
 ```js
-// use .that to resolve 'db:connected'
-// without affecting the Promise chain
-dbConnect(user, pass)
+// middleware
+connectToDb
+  // resolves and returns the value
   .then(notify.that('db:connected'))
-  .then(useDB);
-
-notify.when('db:connected').then(doSomethingElse);
+  .then(readDatabaseInfo);
 ```
 
 
-#### New in 1.2.0 - optional Promise behavior
-
-If the `.when` method is **invoked without passing a callback**, it will return a `Promise` that will be resolved once the event will be called.
+#### notify.when(type[, callback])
+Usable both through callbacks or as `Promise`, the `.when` method asks for a channel and resolves it once available.
 
 ```js
-// an ES7 future coming next  to you soon
-var coords = await notify.when('geoposition:available');
-
-
-// keep a promise for future .then(cb) usage
-var getCoords = notify.when('geoposition:available');
-
-// don't keep a promise, but use it as such
-notify.when('geoposition:available').then(function (coords) {
-  // use coords
+// using a callback
+notify.when('geo:position', info => {
+  console.log(info.coords);
 });
 
-
-// equivalent, NON Promise based result
-notify.when('geoposition:available', function (coords) {
-  // use coords
-});
-// if the callback is specified, no Promise will ever be
-// created or returned to avoid resolution race and
-// conflicts between these two different patterns
+// Promise based
+notify.when('geo:position').then(info => {
+  console.log(info.coords);
+})
 ```
-Please note this library is *not in charge of providing any polyfill*, so if a `Promise` is needed, please be sure your target engines support it.
-Alternatively, if there is no `Promise` constructor available, this library will throw a `ReferenceError`.
+
+It doesn't matter if `.when` is used before or after a channel has been resolved, it will always pass along the last known resolved value.
+
+```js
+// log on 'timer' channel (will log 123)
+notify.when('timer', console.log);
+
+// resolves the channel with value 1
+notify.that('timer', 123);
+
+setTimeout(() => {
+  // log resolved 'timer' channel value
+  // (will log 123)
+  notify.when('timer', console.log);
+}, 200);
+```
 
 
+##### Callback or Promise ?
+If you are resolving older APIs like NodeJS `require('fs').readFileSync`,
+you probably want to use a callback because the resolution will pass along two arguments, not just one.
 
-## Which file ?
+```js
+fs.readFile(
+  'package.json',
+  (err, blob) => {
+    notify.that('fs:package.json', err, blob);
+  }
+);
+
+notify.when('fs:package.json', (err, blob) => {
+  if (err) return console.error(err);
+  console.log(blob.toString());
+});
+```
+
+As previously mentioned, you can still use the shortcut to resolve with all arguments once that happens.
+
+```js
+fs.readFile(
+  'package.json',
+  notify.that('fs:package.json')
+);
+```
+
+
+##### notify.drop(type, callback)
+Usable only for callbacks registered via `notify.when(type, callback)`,
+the `.drop` method avoid triggering the channel in the immediate present or future.
+
+```js
+function log(value) {
+  console.log(value);
+}
+
+// wait for it to happen
+notify.when('happened', log);
+
+// change your mind
+notify.drop('happened', log);
+
+// whenever it happens
+// nothing will be logged
+notify.that('happened', 'nope');
+```
+This method is particularly handy in conjunction of the `notify.all(type, callback)` method.
+
+
+##### notify.all(type, callback)
+In case you'd like to react every time a channel is updated,
+this method will register the `callback` and invoke it with the latest resolution each time.
+
+```js
+// each position change
+navigator.geolocation.watchPosition(
+  // update with latest info
+  notify.that('geo:position')
+);
+
+
+// react to all position changes
+notify.all(
+  'geo:position',
+
+  // tracker
+  info => {
+    console.log(info.coords);
+  }
+);
+```
+
+Registered callbacks can be dropped through the `notify.drop(type, callback)` method.
+
+##### notify.new()
+There are basically two ways to have a private notification channel:
+
+  * using a private `Symbol` as channel, like in `notify.when(privateSymbol).then(log)`
+  * create a local version of the notifier that will share nothing with the main one, like in `const notifyPVT = notify.new();`
+
+
+### Which file ?
 Browsers could use [the minified version](https://github.com/WebReflection/notify-js/blob/master/build/notify-js.js), otherwise there is a [node module](https://github.com/WebReflection/notify-js/blob/master/build/notify-js.node.js)
 which is also available via npm as `npm install notify-js`.
 
 
-
 ### Compatibility
-This library is compatible with every JS engine since ES3, both browser and server.
-
-A `Promise` polyfill might be needed to use Promise based `notify.that('evt-name').then(...)`
+This library is compatible with every JS engine since ES3, both browser and server,
+but a `Promise` polyfill might be needed to use Promise based patterns.
