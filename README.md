@@ -109,7 +109,7 @@ fs.readFile(
 
 ### notify.drop(type, callback)
 Usable only for callbacks registered via `notify.when(type, callback)`,
-the `.drop` method avoid triggering the channel in the immediate present or future.
+the `.drop` method avoids triggering the channel in the immediate present or future.
 
 ```js
 function log(value) {
@@ -158,7 +158,8 @@ Registered callbacks can be dropped through the `notify.drop(type, callback)` me
 There are basically two ways to have a private notification channel:
 
   * using a private `Symbol` as channel, like in `notify.when(privateSymbol).then(log)`
-  * create a local version of the notifier that will share nothing with the main one, like in `const notifyPVT = notify.new();`
+  * create a local version of the notifier that will share nothing with the main one:
+    `const pvt = notify.new();`
 
 
 ## Which file ?
