@@ -14,6 +14,8 @@ There are 4 methods, described as such:
   * `notify.that(type[, any1[, any2[, ...]]])` aliased as `.about` resolves a type or returns a callback used to resolve the `type` with received arguments, once executed ( see examples )
   * `notify.drop(type, callback)` in case something hasn't happened yet and we changed our mind about waiting for the event, we can still remove it!
   * `notify.new()` create a new `notify`-like object. By default, `notify` is a global communication channel, but it brings this simple method that will create a new object for private communication purpose, if needed.
+  * `notify.through(type)` returns a Promise middleware-like function that will resolve the `type` and return whatever value was received.
+
 
 In order to use private channels, feel free to create unique IDs as type, or simply use a `Symbol`, whenever available.
 
@@ -79,6 +81,20 @@ fs.readFile(
 
 Whenever the last `notify.that` will be executed, all listeners waiting for it will be triggered.
 
+
+#### New in 2.1.0 - notify.that(type):futureValue
+
+Handy to resolve while passing through a promise chain, the `.that(type)` method now returns whatever value has been used to resolve.
+
+```js
+// use through to resolve 'db:connected'
+// without affecting the Promise chain
+dbConnect(user, pass)
+  .then(notify.that('db:connected'))
+  .then(useDB);
+
+notify.when('db:connected').than(doSomethingElse);
+```
 
 
 #### New in 1.2.0 - optional Promise behavior

@@ -194,20 +194,53 @@ test.async(function (done) {
   }, delay * later);
 });
 
+later += 5;
+
+test.async(function (done) {
+  setTimeout(function () {
+    test.log('## .that(type, value):value');
+    var rand = Math.random();
+    var through = notify.that('test-through', rand);
+    notify.when('test-through', function (value) {
+      test(value === rand, 'same value resolved');
+      done();
+    });
+  }, delay * later);
+});
+
 if (typeof Promise !== 'undefined') {
     later += 5;
 
     test.async(function (done) {
     setTimeout(function () {
+        test.log('## .when(type):Promise');
         var v = Math.random(), args;
         var p = notify.when('test-promise');
         test(typeof p === 'object', 'object returned');
         notify.that('test-promise', v);
         p.then(function (value) {
-        test.log('## .when(type):Promise');
         test(value === v, 'the value is the right one');
         done();
         });
     }, delay * later);
-    });
+  });
+
+  later += 5;
+
+  test.async(function (done) {
+    setTimeout(function () {
+      var rand = Math.random();
+      test.log('## .when(type):futureValue');
+      Promise.resolve(rand)
+        .then(notify.that('test-future-value'))
+        .then(function (value) {
+          notify.when('test-future-value').then(function (later) {
+            test(value === later, 'later value is the same');
+            test(value === rand, 'later value is correct');
+            done();
+          });
+      });
+    }, delay * later);
+  });
+
 }

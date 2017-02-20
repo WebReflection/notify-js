@@ -160,6 +160,7 @@ function create(O) {'use strict';
       cb = info.cb.splice(i, len);
       while (i < len) resolve(info.args).then(bind.call(notify, cb[i++]));
     }
+    return info.args[0];
   }
 
   function when(type, callback) {
