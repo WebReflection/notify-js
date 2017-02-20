@@ -87,13 +87,13 @@ Whenever the last `notify.that` will be executed, all listeners waiting for it w
 Handy to resolve while passing through a promise chain, the `.that(type)` method now returns whatever value has been used to resolve.
 
 ```js
-// use through to resolve 'db:connected'
+// use .that to resolve 'db:connected'
 // without affecting the Promise chain
 dbConnect(user, pass)
   .then(notify.that('db:connected'))
   .then(useDB);
 
-notify.when('db:connected').than(doSomethingElse);
+notify.when('db:connected').then(doSomethingElse);
 ```
 
 
